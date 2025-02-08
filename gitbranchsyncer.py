@@ -4,9 +4,7 @@ import os
 import git
 import time
 import signal
-import atexit
 import logging
-import glob
 from pathlib import Path
 from datetime import datetime
 
