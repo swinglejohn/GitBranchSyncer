@@ -23,12 +23,6 @@ git-branch-syncer
 
 # Stop monitoring current branch (in current directory/ repo)
 git-branch-syncer stop
-
-# List all running daemons across all repositories
-git-branch-syncer list
-
-# Stop all running daemons across all repositories
-git-branch-syncer stop all
 ```
 
 ## About the tool
@@ -36,7 +30,7 @@ git-branch-syncer stop all
 - Runs as a daemon process in the background
 - Monitors a branch and pulls new commits
 - Checks for updates every 5 seconds
-- Allows for multiple instances running at once (managed by PID)
+- Allows for multiple instances running at once for different repos (managed by PID)
 - Fast-forward only pulls to prevent conflicts (stops on failure to pull)
 - Log all activities to ~/.gitbranchsyncer/logs/gitbranchsyncer.log
 
@@ -59,7 +53,7 @@ git-branch-syncer stop
 # Stop monitoring specific branch
 git-branch-syncer stop branch-name
 
-# Stop all running daemons
+# Stop all running daemons (ex. in different repos)
 git-branch-syncer stop all
 ```
 
