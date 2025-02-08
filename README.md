@@ -1,6 +1,6 @@
 # Git Branch Syncer
 
-A command line utility that helps you stay in sync with remote branches, particularly useful when working with AI bots (like Mentat) that are contributing to your branches while you're testing locally.
+A command line utility that automatically keeps your local branches in sync with remote changes. Particularly useful when working with AI bots (like Mentat) that are contributing to your branches while you're testing locally.
 
 ## Installation
 
@@ -19,29 +19,32 @@ pip install .
 
 The tool can be used in two ways:
 
-1. Sync current branch:
+1. Monitor current branch:
 ```bash
 git-branch-syncer
 ```
 
-2. Sync a specific branch:
+2. Monitor a specific branch:
 ```bash
 git-branch-syncer branch-name
 ```
 
 The tool will:
-- Fetch the latest changes from remote
-- Check if your local branch is behind the remote
-- Pull any new changes if needed
-- Provide feedback about the sync status
+- Run in the background while keeping your terminal interactive
+- Continuously monitor for new remote commits
+- Automatically pull changes as soon as they're detected
+- Provide timestamped feedback when changes are pulled
+- Can be stopped at any time with Ctrl+C
 
 ## Features
 
-- Automatically detects current branch if none specified
-- Fetches latest changes from remote
-- Shows number of new commits being pulled
+- Runs in background while keeping terminal interactive
+- Automatically detects and pulls new commits
+- Checks for updates every 5 seconds
+- Shows timestamp with notifications
+- Graceful shutdown with Ctrl+C
 - Handles common error cases (merge conflicts, network issues)
-- Provides clear feedback about what's happening
+- Provides clear feedback about sync status
 
 ## Requirements
 
