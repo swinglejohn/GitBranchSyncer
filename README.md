@@ -85,8 +85,8 @@ All sync activities are logged to:
 You can create a hooks script that will be executed after successfully pulling new changes. This is useful for automatically rebuilding and restarting your project when changes are pulled.
 
 To use hooks:
-1. Create a file named `git-branch-syncer-hooks.sh` in your repository root
-2. Make it executable (`chmod +x git-branch-syncer-hooks.sh`)
+1. Create a file named `.git-branch-syncer-hooks.sh` in your repository root
+2. Make it executable (`chmod +x .git-branch-syncer-hooks.sh`)
 3. Add "#!/bin/bash" at the top of the file
 4. Add any and all commands to rebuild/restart your project
 
