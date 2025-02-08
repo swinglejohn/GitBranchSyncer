@@ -166,56 +166,62 @@ class GitBranchSyncer:
                 break
             time.sleep(check_interval)
 
-def find_git_repos():
-    """Find all git repositories that have branch syncer daemons."""
-    repos = {}
-    
-    # Look for PID files in all git repositories
-    for git_dir in Path.home().rglob(".git"):
-        if not git_dir.is_dir():
-            continue
-            
-        repo_path = git_dir.parent
-        pid_files = list(git_dir.glob("branch-syncer-*.pid"))
-        if pid_files:  # Only include repos that have syncer daemons
-            try:
-                repo = git.Repo(repo_path)
-                repos[repo_path] = repo
-            except git.InvalidGitRepositoryError:
-                continue
-                
-    return repos
-
 def get_running_daemons(repo_path=None):
     """Get list of branches with running daemons."""
     running_daemons = []
     
+    def check_repo(repo_path):
+        """Check a specific repository for running daemons."""
+        try:
+            git_dir = repo_path / ".git"
+            if not git_dir.is_dir():
+                return
+            
+            # Find all PID files
+            for pid_file in git_dir.glob("branch-syncer-*.pid"):
+                branch_name = pid_file.name.replace("branch-syncer-", "").replace(".pid", "")
+                try:
+                    pid = int(pid_file.read_text().strip())
+                    # Check if process is running
+                    os.kill(pid, 0)  # This will raise an error if process is not running
+                    running_daemons.append((repo_path, branch_name, pid))
+                except (ProcessLookupError, ValueError, FileNotFoundError):
+                    # Clean up stale PID file
+                    try:
+                        pid_file.unlink()
+                    except FileNotFoundError:
+                        pass
+        except Exception:
+            pass
+    
     if repo_path:
         # Check specific repository
-        repos = {Path(repo_path): git.Repo(repo_path)}
+        check_repo(Path(repo_path))
     else:
-        # Check all repositories
-        repos = find_git_repos()
-    
-    for repo_path, repo in repos.items():
-        git_dir = repo_path / ".git"
-        
-        # Find all PID files
-        for pid_file in git_dir.glob("branch-syncer-*.pid"):
-            branch_name = pid_file.name.replace("branch-syncer-", "").replace(".pid", "")
-            try:
-                pid = int(pid_file.read_text().strip())
-                # Check if process is running
-                os.kill(pid, 0)  # This will raise an error if process is not running
-                running_daemons.append((repo_path, branch_name, pid))
-            except (ProcessLookupError, ValueError, FileNotFoundError):
-                # Clean up stale PID file
-                try:
-                    pid_file.unlink()
-                except FileNotFoundError:
-                    pass
+        # Check current directory and its parents
+        current = Path.cwd()
+        while current != current.parent:
+            check_repo(current)
+            current = current.parent
                 
     return running_daemons
+
+def check_daemon_running(repo_path, branch_name):
+    """Check if a daemon is already running for the given branch."""
+    pid_file = repo_path / ".git" / f"branch-syncer-{branch_name}.pid"
+    if pid_file.exists():
+        try:
+            pid = int(pid_file.read_text().strip())
+            # Check if process is running
+            os.kill(pid, 0)
+            return True
+        except (ProcessLookupError, ValueError, FileNotFoundError):
+            # Clean up stale PID file
+            try:
+                pid_file.unlink()
+            except FileNotFoundError:
+                pass
+    return False
 
 def stop_daemon(pid_file, repo_path, branch_name):
     """Stop the daemon process."""
@@ -294,7 +300,16 @@ def main():
         else:
             # Start daemon for specific branch
             try:
-                syncer = GitBranchSyncer(branch_name=command)
+                repo = git.Repo(Path.cwd(), search_parent_directories=True)
+                repo_path = Path(repo.working_dir)
+                branch_name = command if command != "start" else repo.active_branch.name
+                
+                # Check if daemon is already running
+                if check_daemon_running(repo_path, branch_name):
+                    print(f"Error: A daemon is already running for branch '{branch_name}'")
+                    sys.exit(1)
+                
+                syncer = GitBranchSyncer(branch_name=branch_name)
                 syncer.daemonize()
                 syncer.run()
             except git.InvalidGitRepositoryError:
@@ -303,6 +318,15 @@ def main():
     else:
         # Start daemon for current branch
         try:
+            repo = git.Repo(Path.cwd(), search_parent_directories=True)
+            repo_path = Path(repo.working_dir)
+            branch_name = repo.active_branch.name
+            
+            # Check if daemon is already running
+            if check_daemon_running(repo_path, branch_name):
+                print(f"Error: A daemon is already running for branch '{branch_name}'")
+                sys.exit(1)
+            
             syncer = GitBranchSyncer()
             syncer.daemonize()
             syncer.run()
