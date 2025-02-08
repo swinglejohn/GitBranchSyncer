@@ -87,12 +87,14 @@ You can create a hooks script that will be executed after successfully pulling n
 To use hooks:
 1. Create a file named `git-branch-syncer-hooks.sh` in your repository root
 2. Make it executable (`chmod +x git-branch-syncer-hooks.sh`)
-3. Add your commands to rebuild/restart your project
+3. Add "#!/bin/bash" at the top of the file
+4. Add any and all commands to rebuild/restart your project
 
 Example hooks script:
 ```bash
 #!/bin/bash
-# Rebuild and restart after new changes
+
+# Rebuild and restart after new changes (these commands are just examples)
 npm install
 npm run build
 pm2 restart myapp
