@@ -89,7 +89,7 @@ class GitBranchSyncer:
             
     def execute_hooks(self):
         """Execute the hooks script if it exists."""
-        hooks_file = self.repo_path / "git-branch-syncer-hooks.sh"
+        hooks_file = self.repo_path / ".git-branch-syncer-hooks.sh"
         if not hooks_file.exists():
             return True
 
