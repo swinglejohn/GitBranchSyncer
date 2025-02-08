@@ -17,15 +17,12 @@ pip install .
 
 ## Usage
 
-Start monitoring a branch:
-
-1. Monitor current branch:
+Start monitoring:
 ```bash
+# Monitor current branch
 git-branch-syncer
-```
 
-2. Monitor a specific branch:
-```bash
+# Monitor specific branch
 git-branch-syncer branch-name
 ```
 
@@ -36,6 +33,14 @@ git-branch-syncer stop
 
 # Stop monitoring specific branch
 git-branch-syncer stop branch-name
+
+# Stop all running daemons
+git-branch-syncer stop all
+```
+
+List running daemons:
+```bash
+git-branch-syncer list
 ```
 
 The tool will:
@@ -43,6 +48,7 @@ The tool will:
 - Keep your terminal completely free for other commands
 - Continuously monitor for new remote commits
 - Automatically pull changes as soon as they're detected
+- Stop automatically if any errors occur (merge conflicts, etc.)
 - Log all activities to ~/.gitbranchsyncer/logs/gitbranchsyncer.log
 
 ## Features
@@ -54,7 +60,19 @@ The tool will:
 - Proper process management with PID files
 - Detailed logging of all activities
 - Graceful shutdown support
-- Handles common error cases (merge conflicts, network issues)
+- Automatic shutdown on errors to prevent spam
+- Commands to manage multiple daemons
+- Fast-forward only pulls to prevent conflicts
+
+## Error Handling
+
+The daemon will automatically stop if:
+- A merge conflict occurs
+- The branch is not tracking a remote branch
+- The branch is deleted
+- Any other git error occurs
+
+This prevents error message spam and allows you to resolve issues manually.
 
 ## Log File
 
