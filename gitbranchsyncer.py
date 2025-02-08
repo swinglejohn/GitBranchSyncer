@@ -87,6 +87,41 @@ class GitBranchSyncer:
         print(f"PID: {pid}")
         print(f"Logs: {self.log_file}")
             
+    def execute_hooks(self):
+        """Execute the hooks script if it exists."""
+        hooks_file = self.repo_path / ".git-branch-syncer-hooks.sh"
+        if not hooks_file.exists():
+            return True
+
+        try:
+            # Make the hooks file executable
+            hooks_file.chmod(0o755)
+            
+            # Execute the hooks script
+            import subprocess
+            self.logger.info("Executing hooks script...")
+            result = subprocess.run(
+                [str(hooks_file)],
+                cwd=str(self.repo_path),
+                capture_output=True,
+                text=True
+            )
+            
+            if result.returncode == 0:
+                self.logger.info("Hooks script executed successfully")
+                if result.stdout.strip():
+                    self.logger.info(f"Hooks output: {result.stdout.strip()}")
+                return True
+            else:
+                self.logger.error(f"Hooks script failed with exit code {result.returncode}")
+                if result.stderr.strip():
+                    self.logger.error(f"Hooks error: {result.stderr.strip()}")
+                return False
+                
+        except Exception as e:
+            self.logger.error(f"Error executing hooks script: {e}")
+            return False
+
     def check_and_sync_branch(self):
         """Check for and sync new commits for the branch."""
         try:
@@ -113,6 +148,9 @@ class GitBranchSyncer:
             self.logger.info(f"Found {len(commits_behind)} new commit(s). Pulling changes...")
             self.repo.git.pull('--ff-only')  # Only fast-forward pulls to avoid conflicts
             self.logger.info("Successfully synced with remote!")
+            
+            # Execute hooks after successful pull
+            self.execute_hooks()
             return True
             
         except git.GitCommandError as e:
