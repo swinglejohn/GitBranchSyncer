@@ -157,6 +157,7 @@ class GitBranchSyncer:
 def get_running_daemons():
     """Get list of all running daemons using pgrep."""
     running_daemons = []
+    current_pid = os.getpid()
     
     try:
         # Run pgrep to find all git-branch-syncer processes
@@ -173,6 +174,10 @@ def get_running_daemons():
                 # Split line into PID and command
                 pid, *cmd_parts = line.strip().split()
                 pid = int(pid)
+                
+                # Skip current process
+                if pid == current_pid:
+                    continue
                 
                 # Read process environment
                 try:
