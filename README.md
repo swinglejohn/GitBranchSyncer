@@ -38,9 +38,20 @@ git-branch-syncer stop branch-name
 git-branch-syncer stop all
 ```
 
-List running daemons:
+Manage daemons:
 ```bash
+# List all running daemons across all repositories
 git-branch-syncer list
+
+# Example output:
+Running Git Branch Syncer daemons:
+
+project1:
+  - Branch 'main' (PID: 1234)
+  - Branch 'feature-1' (PID: 5678)
+
+project2:
+  - Branch 'develop' (PID: 9012)
 ```
 
 The tool will:
@@ -61,8 +72,25 @@ The tool will:
 - Detailed logging of all activities
 - Graceful shutdown support
 - Automatic shutdown on errors to prevent spam
-- Commands to manage multiple daemons
+- Global daemon management across all repositories
 - Fast-forward only pulls to prevent conflicts
+
+## Daemon Management
+
+The tool provides global daemon management across all repositories:
+
+```bash
+# List all running daemons in all repositories
+git-branch-syncer list
+
+# Stop all daemons in all repositories
+git-branch-syncer stop all
+
+# Stop specific daemon (must be in repository)
+git-branch-syncer stop branch-name
+```
+
+When stopping a specific daemon, if it's not running, the tool will show all running daemons across repositories to help you find the one you want to stop.
 
 ## Error Handling
 
