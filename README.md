@@ -80,6 +80,31 @@ All sync activities are logged to:
 ~/.gitbranchsyncer/logs/gitbranchsyncer.log
 ```
 
+## Hooks
+
+You can create a hooks script that will be executed after successfully pulling new changes. This is useful for automatically rebuilding and restarting your project when changes are pulled.
+
+To use hooks:
+1. Create a file named `git-branch-syncer-hooks.sh` in your repository root
+2. Make it executable (`chmod +x git-branch-syncer-hooks.sh`)
+3. Add your commands to rebuild/restart your project
+
+Example hooks script:
+```bash
+#!/bin/bash
+# Rebuild and restart after new changes
+npm install
+npm run build
+pm2 restart myapp
+```
+
+The hooks script:
+- Is optional - the daemon works fine without it
+- Runs from the repository root directory
+- Can contain any commands you need
+- Its output will be logged to the daemon's log file
+- If it fails, the error will be logged but won't stop the daemon
+
 ## Requirements
 
 - Python 3.6 or higher
