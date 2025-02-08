@@ -154,10 +154,14 @@ class GitBranchSyncer:
                 break
             time.sleep(check_interval)
 
-def get_running_daemons():
-    """Get list of all running daemons using pgrep."""
+def get_running_daemons(exclude_pid=None):
+    """
+    Get list of all running daemons using pgrep.
+    
+    Args:
+        exclude_pid: Optional PID to exclude from results (e.g., current process)
+    """
     running_daemons = []
-    current_pid = os.getpid()
     
     try:
         # Run pgrep to find all git-branch-syncer processes
@@ -175,8 +179,8 @@ def get_running_daemons():
                 pid, *cmd_parts = line.strip().split()
                 pid = int(pid)
                 
-                # Skip current process
-                if pid == current_pid:
+                # Skip excluded process
+                if exclude_pid is not None and pid == exclude_pid:
                     continue
                 
                 # Read process environment
@@ -221,7 +225,7 @@ def get_running_daemons():
 
 def check_daemon_running(repo_path, branch_name):
     """Check if a daemon is already running for the given branch."""
-    daemons = get_running_daemons()
+    daemons = get_running_daemons(exclude_pid=os.getpid())
     repo_path = Path(repo_path).resolve()
     
     for daemon_repo, daemon_branch, _ in daemons:
@@ -239,7 +243,7 @@ def stop_daemon(pid):
 
 def stop_all_daemons():
     """Stop all running daemons."""
-    daemons = get_running_daemons()
+    daemons = get_running_daemons(exclude_pid=os.getpid())
     if not daemons:
         print("No Git Branch Syncer daemons are running")
         return
@@ -251,7 +255,7 @@ def stop_all_daemons():
 
 def list_daemons():
     """List all running daemons."""
-    daemons = get_running_daemons()
+    daemons = get_running_daemons(exclude_pid=os.getpid())
     if daemons:
         print("Running Git Branch Syncer daemons:")
         current_repo = None
@@ -280,7 +284,7 @@ def main():
                     branch_name = sys.argv[2] if len(sys.argv) > 2 else repo.active_branch.name
                     
                     # Find matching daemon
-                    daemons = get_running_daemons()
+                    daemons = get_running_daemons(exclude_pid=os.getpid())
                     found = False
                     for daemon_repo, daemon_branch, pid in daemons:
                         if daemon_repo == repo_path and daemon_branch == branch_name:
