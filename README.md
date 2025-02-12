@@ -1,6 +1,6 @@
 # Git Branch Syncer
 
-A command line utility that automatically keeps your local branches in sync with remote changes by running in the background. Particularly useful when working with AI bots (like Mentat) that are contributing to your branches while you're testing locally.
+A command line utility that automatically keeps your local branches in sync with remote changes. Particularly useful when working with AI bots (like Mentat) that are contributing to your branches while you're testing locally.
 
 ## Installation
 
@@ -15,28 +15,10 @@ cd GitBranchSyncer
 pip install .
 ```
 
+## Usage Modes
 
-## Common Commands:
-```bash
-# Monitor current branch (in current directory/ repo)
-git-branch-syncer
-
-# Stop monitoring current branch (in current directory/ repo)
-git-branch-syncer stop
-```
-
-## About the tool
-
-- Runs as a daemon process in the background
-- Monitors a branch and pulls new commits
-- Checks for updates every 5 seconds
-- Allows for multiple instances running at once for different repos (managed by PID)
-- Fast-forward only pulls to prevent conflicts (stops on failure to pull)
-- Log all activities to ~/.gitbranchsyncer/logs/gitbranchsyncer.log
-
-## All Commands 
-
-Start monitoring:
+### Interactive Mode (Default)
+Runs in your terminal, showing real-time output:
 ```bash
 # Monitor current branch
 git-branch-syncer
@@ -44,6 +26,26 @@ git-branch-syncer
 # Monitor specific branch
 git-branch-syncer branch-name
 ```
+
+### Daemon Mode
+Runs in the background, logging to file:
+```bash
+# Monitor current branch as daemon
+git-branch-syncer --daemon
+
+# Monitor specific branch as daemon
+git-branch-syncer --daemon branch-name
+```
+
+## About the tool
+
+- Monitors a branch and pulls new commits
+- Checks for updates every 5 seconds
+- Fast-forward only pulls to prevent conflicts (stops on failure to pull)
+- Hooks are terminated and rerun when new changes arrive
+- Can run either interactively or as a daemon process
+
+## Managing Daemons
 
 Stop monitoring:
 ```bash
@@ -53,31 +55,14 @@ git-branch-syncer stop
 # Stop monitoring specific branch
 git-branch-syncer stop branch-name
 
-# Stop all running daemons (ex. in different repos)
+# Stop all running daemons
 git-branch-syncer stop all
 ```
 
-Manage daemons:
+List daemons:
 ```bash
 # List all running daemons across all repositories
 git-branch-syncer list
-
-# Example output:
-Running Git Branch Syncer daemons:
-
-project1:
-  - Branch 'main' (PID: 1234)
-  - Branch 'feature-1' (PID: 5678)
-
-project2:
-  - Branch 'develop' (PID: 9012)
-```
-
-## Log File
-
-All sync activities are logged to:
-```
-~/.gitbranchsyncer/logs/gitbranchsyncer.log
 ```
 
 ## Hooks
@@ -101,11 +86,18 @@ pm2 restart myapp
 ```
 
 The hooks script:
-- Is optional - the daemon works fine without it
+- Is optional - syncing works without it
 - Runs from the repository root directory
-- Can contain any commands you need
-- Its output will be logged to the daemon's log file
-- If it fails, the error will be logged but won't stop the daemon
+- Will be terminated and rerun when new changes arrive
+- Output is visible in interactive mode
+- Output is logged to file in daemon mode
+
+## Log File (Daemon Mode)
+
+When running in daemon mode, all activities are logged to:
+```
+~/.gitbranchsyncer/logs/gitbranchsyncer.log
+```
 
 ## Requirements
 
